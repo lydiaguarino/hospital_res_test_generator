@@ -88,7 +88,7 @@ public class HRGenerator {
                 hospitalApplicants.add(r.id);
             }
         }
-        return shuffleArray(hospitalApplicants).subList(0, limit);
+        return shuffleArray(hospitalApplicants).subList(0, Math.min(limit, hospitalApplicants.size()));
     }
 
     private static void swap(List<String> a, int i, int change) {
