@@ -3,8 +3,8 @@ package com.lydiaguarino.hrgenerator;
 import java.util.List;
 
 class Resident {
-    private String id;
-    private List<String> preferences;
+    String id;
+    List<String> preferences;
     private String partner;
 
     Resident(String uid, List<String> prefs) {
@@ -16,6 +16,7 @@ class Resident {
     void setPartner(String id) {
         partner = id;
     }
+    void setPreferences(List<String> prefs) { preferences = prefs; }
 
     private String getPrefString() {
         StringBuilder prefString = new StringBuilder();

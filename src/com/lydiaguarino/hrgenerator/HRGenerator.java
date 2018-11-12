@@ -10,12 +10,11 @@ import java.util.*;
 public class HRGenerator {
     public static void main(String[] args) {
         // read in args for generator
-        String fnSalt = args[0];
+        String filePrefix = args[0];
         int hospitalCount = Integer.parseInt(args[1]);
-        int residentCount = Integer.parseInt(args[2]);
-        int coupleCount = Integer.parseInt(args[3]);
-        double locationVariance = 0.5;
-        int locationCount = (int)Math.ceil(hospitalCount * locationVariance);
+        int locationCount = Integer.parseInt(args[2]);
+        int residentCount = Integer.parseInt(args[3]);
+        int coupleCount = Integer.parseInt(args[4]);
         int prefMax = 15;
         int hospitalPrefsMax = Math.min(residentCount, prefMax);
         int residentPrefsMax = Math.min(hospitalCount, prefMax);
@@ -47,23 +46,16 @@ public class HRGenerator {
 
         // generate residents
         for (String r: residentIds) {
-            residents.add(new Resident(r, getPreferences(hospitalIds, residentPrefsMax)));
-        }
-
-        // generate hospitals
-        for (String h: hospitalIds) {
-            hospitals.add(new Hospital(h, getPreferences(residentIds, hospitalPrefsMax), getRandom(capacities), getRandom(locationIds)));
+            residents.add(new Resident(r, getResidentPreferences(hospitalIds, residentPrefsMax)));
         }
 
         // set couples
-        List<String> shuffledResidents = shuffleArray(residentIds);
-        for (int y = 0; y < coupleCount * 2; y = y + 2) {
-            String res = shuffledResidents.get(y);
-            String partner = shuffledResidents.get(y + 1);
-            int resIndex = Integer.parseInt(res.split("R")[1]);
-            int partnerIndex = Integer.parseInt(partner.split("R")[1]);
-            residents.get(resIndex).setPartner(partner);
-            residents.get(partnerIndex).setPartner(res);
+        updatePartners(residentIds, residents, coupleCount);
+
+
+        // generate hospitals
+        for (String h: hospitalIds) {
+            hospitals.add(new Hospital(h, getHospitalPreferences(h, residents, hospitalPrefsMax), getRandom(capacities), getRandom(locationIds)));
         }
 
         // output csv files
@@ -78,15 +70,25 @@ public class HRGenerator {
         }
 
         try {
-            Files.write(Paths.get("test_files/" + fnSalt + "_hospitals.csv"), hospCSV, utf8);
-            Files.write(Paths.get("test_files/" + fnSalt + "_residents.csv"), resCSV, utf8);
+            Files.write(Paths.get("test_files/" + filePrefix + "_hospitals.csv"), hospCSV, utf8);
+            Files.write(Paths.get("test_files/" + filePrefix + "_residents.csv"), resCSV, utf8);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static List<String> getPreferences(List<String> list, int limit) {
+    private static List<String> getResidentPreferences(List<String> list, int limit) {
         return shuffleArray(list).subList(0, limit);
+    }
+
+    private static List<String> getHospitalPreferences(String id, List<Resident> residents, int limit) {
+        List<String> hospitalApplicants = new ArrayList<>();
+        for (Resident r : residents) {
+            if (r.preferences.contains(id)) {
+                hospitalApplicants.add(r.id);
+            }
+        }
+        return shuffleArray(hospitalApplicants).subList(0, limit);
     }
 
     private static void swap(List<String> a, int i, int change) {
@@ -110,6 +112,31 @@ public class HRGenerator {
     private static <T> T getRandom(List<T> array) {
         int rnd = new Random().nextInt(array.size());
         return array.get(rnd);
+    }
+
+    private static void updatePartners(List<String> residentIds, List<Resident> residents, int coupleCount) {
+        // choose random pairs by shuffling list and grabbing pairs sequentially
+        // There is some wack-a-doo proliferation of array lists in this method - will look at optimizing in the future.
+        List<String> shuffledResidents = shuffleArray(residentIds);
+        for (int y = 0; y < coupleCount * 2; y = y + 2) {
+            String resId = shuffledResidents.get(y);
+            String partnerId = shuffledResidents.get(y + 1);
+            int resIndex = Integer.parseInt(resId.split("R")[1]);
+            int partnerIndex = Integer.parseInt(partnerId.split("R")[1]);
+            Resident resA = residents.get(resIndex);
+            Resident resB = residents.get(partnerIndex);
+            resA.setPartner(partnerId);
+            resB.setPartner(resId);
+            // update partner B's preference list to partially align with partner A
+            // use half of each list, remove duplicates and shuffle
+            List<String> resATopPicks = new ArrayList<>(resA.preferences.subList(0, resA.preferences.size() / 2));
+            List<String> resBTopPicks = new ArrayList<>(resB.preferences.subList(0, resB.preferences.size() / 2));
+            List<String> combinedPicks = new ArrayList<>();
+            combinedPicks.addAll(resATopPicks);
+            combinedPicks.addAll(resBTopPicks);
+            List<String> dedupedList = new ArrayList<>(new HashSet<>(combinedPicks));
+            resB.setPreferences(shuffleArray(dedupedList));
+        }
     }
 }
 
