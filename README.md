@@ -23,8 +23,7 @@ ex: `test0 20 5 35 8`
 
 test0_hospitals.csv
 
-|---------|---------|---------|----------|
-| hospitalId | locationId | capacity | preferences |
+| `hospitalId` | `locationId` | `capacity` | `preferences` |
 
 ```
 H0,2,5,R21 R17 R26 R3 R31 R18 R1 R30 R33 R7 R8 R20 R25 R28 R24
@@ -51,8 +50,7 @@ H19,4,4,R25 R14 R20 R34 R32 R19 R30 R9 R31 R24 R8 R28 R11 R12 R22
 
 test0_residents.csv
 
-|---------|---------|---------|
-| residentId | preferences | partner |
+| `residentId` | `preferences` | `partner` |
 
 ```
 R0,H13 H2 H16 H14 H9 H11 H3 H8 H4 H5 H17 H15,R19
