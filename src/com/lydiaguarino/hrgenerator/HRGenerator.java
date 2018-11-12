@@ -42,7 +42,7 @@ public class HRGenerator {
         }
 
         for (int x=0; x < locationCount; x++) {
-            locationIds.add('L' + Integer.toString(x));
+            locationIds.add(Integer.toString(x));
         }
 
         // generate residents
