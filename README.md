@@ -5,7 +5,9 @@ a CSV representing hospitals and a CSV representing residents.
 
 ### To use:
 run script with the following args:
+
 `<String filenamePrefix>  <int hospitalCount> <int locationCount> <int residentCount> <int coupleCount>`
+
 ex: `test0 20 5 35 8`
 
 |                  |                                                                                                                |
